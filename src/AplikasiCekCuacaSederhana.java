@@ -34,6 +34,7 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
         setupComponents();
         loadFavorites();
         setupTableAndButtons(); // Add this line
+        initializeLabel(); // Add this line
     }
 
     private void setupComponents() {
@@ -226,6 +227,7 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.insets = new java.awt.Insets(0, 10, 9, 0);
         jPanel1.add(kotaComboBox, gridBagConstraints);
 
@@ -359,7 +361,13 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void kotaComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {
-        // Handle item state change event here
+        if (evt.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
+            String selectedCity = (String) kotaComboBox.getSelectedItem();
+            if (selectedCity != null && !selectedCity.trim().isEmpty()) {
+                kotaTextField.setText(selectedCity);
+                checkWeather(selectedCity);
+            }
+        }
     }
 
     private void cekButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cekButtonActionPerformed
@@ -442,6 +450,20 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
         } catch (Exception e) {
             jLabel1.setIcon(null);
             jLabel1.setText("Cannot load icon: " + iconName);
+        }
+    }
+
+    private void initializeLabel() {
+        try {
+            String defaultIcon = "default.png";
+            java.awt.Image img = new javax.swing.ImageIcon(getClass().getResource(ICONS_PATH + defaultIcon))
+                    .getImage()
+                    .getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
+            jLabel1.setIcon(new ImageIcon(img));
+            jLabel1.setText("Silahkan pilih kota");
+        } catch (Exception e) {
+            jLabel1.setIcon(null);
+            jLabel1.setText("Silahkan pilih kota");
         }
     }
 
