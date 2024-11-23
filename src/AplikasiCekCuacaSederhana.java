@@ -13,11 +13,14 @@ import org.json.JSONObject;
 
 /**
  *
- * @author ACER
+ * @author Lila
  */
 public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
     private static final String API_KEY = "306b1529af945758f30a9cbf66026aef";
     private static final String ICONS_PATH = "/icons/";
+    private static final int ICON_SIZE = 100; // Add this constant
+    private static final String CSV_FILE = "weather_data.csv";
+    private javax.swing.table.DefaultTableModel tableModel;
     private java.util.List<String> favoriteCities;
     private java.io.File favoritesFile;
 
@@ -30,6 +33,7 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
         initComponents();
         setupComponents();
         loadFavorites();
+        setupTableAndButtons(); // Add this line
     }
 
     private void setupComponents() {
@@ -113,6 +117,74 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
         }
     }
 
+    private void setupTableAndButtons() {
+        // Setup table
+        String[] columns = {"Kota", "Cuaca", "Waktu"};
+        tableModel = new javax.swing.table.DefaultTableModel(columns, 0);
+        jTable1.setModel(tableModel);
+        
+        // Setup button handlers
+        btnSimpan.addActionListener(e -> saveWeatherData());
+        btnMuat1.addActionListener(e -> loadWeatherData());
+    }
+    
+    private void saveWeatherData() {
+        try (java.io.PrintWriter writer = new java.io.PrintWriter(new java.io.FileWriter(CSV_FILE))) {
+            // Write header
+            writer.println("Kota,Cuaca,Waktu");
+            
+            // Write data
+            for (int i = 0; i < tableModel.getRowCount(); i++) {
+                String line = String.format("%s,%s,%s",
+                    tableModel.getValueAt(i, 0),
+                    tableModel.getValueAt(i, 1),
+                    tableModel.getValueAt(i, 2));
+                writer.println(line);
+            }
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Data cuaca berhasil disimpan ke " + CSV_FILE);
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Error menyimpan data: " + e.getMessage());
+        }
+    }
+    
+    private void loadWeatherData() {
+        try {
+            java.io.File file = new java.io.File(CSV_FILE);
+            if (!file.exists()) {
+                javax.swing.JOptionPane.showMessageDialog(this, 
+                    "File data belum ada");
+                return;
+            }
+            
+            // Clear existing data
+            tableModel.setRowCount(0);
+            
+            // Read CSV file
+            java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.FileReader(file));
+            
+            // Skip header
+            String line = reader.readLine();
+            
+            // Read data
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length == 3) {
+                    tableModel.addRow(data);
+                }
+            }
+            reader.close();
+            
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Data cuaca berhasil dimuat");
+        } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(this, 
+                "Error memuat data: " + e.getMessage());
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -136,6 +208,8 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
         favoritLabel = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        btnSimpan = new javax.swing.JButton();
+        btnMuat1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -245,23 +319,40 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
         gridBagConstraints.gridy = 7;
         gridBagConstraints.ipadx = 200;
         gridBagConstraints.ipady = 100;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
         jPanel1.add(jScrollPane1, gridBagConstraints);
+
+        btnSimpan.setText("Simpan Data");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_END;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        jPanel1.add(btnSimpan, gridBagConstraints);
+
+        btnMuat1.setText("Muat Data");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 5);
+        jPanel1.add(btnMuat1, gridBagConstraints);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(44, 44, 44)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 458, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 496, Short.MAX_VALUE)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 450, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(285, Short.MAX_VALUE))
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -299,6 +390,15 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
                                       .getJSONObject(0)
                                       .getString("main");
 
+            String currentTime = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss")
+                .format(new java.util.Date());
+            
+            tableModel.addRow(new Object[]{
+                city,
+                weather,
+                currentTime
+            });
+            
             displayWeatherIcon(weather);
 
         } catch (Exception e) {
@@ -309,22 +409,34 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
 
     private void displayWeatherIcon(String weather) {
         String iconName;
-        switch (weather.toLowerCase()) {
-            case "clear":
-                iconName = "sunny.png";
-                break;
-            case "rain":
-                iconName = "rain.png";
-                break;
-            case "clouds":
-                iconName = "cloudy.png";
-                break;
-            default:
-                iconName = "default.png";
+        String weatherDescription = weather.toLowerCase();
+        
+        // Match exact weather conditions with available icons
+        if (weatherDescription.contains("clear") || weatherDescription.equals("sun")) {
+            iconName = "sunny.png";
+        } else if (weatherDescription.contains("rain") && weatherDescription.contains("light")) {
+            iconName = "light rain.png";
+        } else if (weatherDescription.contains("rain")) {
+            iconName = "rain.png";
+        } else if (weatherDescription.equals("clouds")) {
+            iconName = "cloudy.png";
+        } else if (weatherDescription.contains("cloud")) {
+            iconName = "partly-cloudy.png";
+        } else if (weatherDescription.contains("storm")) {
+            iconName = "strom.png";
+        } else if (weatherDescription.contains("snow")) {
+            iconName = "snow.png";
+        } else if (weatherDescription.contains("mist") || weatherDescription.contains("haze")) {
+            iconName = "fog.png";
+        } else {
+            iconName = "default.png";
         }
 
         try {
-            ImageIcon icon = new ImageIcon(getClass().getResource(ICONS_PATH + iconName));
+            java.awt.Image img = new javax.swing.ImageIcon(getClass().getResource(ICONS_PATH + iconName))
+                    .getImage()
+                    .getScaledInstance(ICON_SIZE, ICON_SIZE, java.awt.Image.SCALE_SMOOTH);
+            ImageIcon icon = new ImageIcon(img);
             jLabel1.setIcon(icon);
             jLabel1.setText(weather);
         } catch (Exception e) {
@@ -369,6 +481,8 @@ public class AplikasiCekCuacaSederhana extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnMuat1;
+    private javax.swing.JButton btnSimpan;
     private javax.swing.JButton cekButton;
     private javax.swing.JComboBox<String> favoritComboBox;
     private javax.swing.JLabel favoritLabel;
